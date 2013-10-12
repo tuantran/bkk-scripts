@@ -2,6 +2,10 @@
 
 GITHUB="git@github.com:amedia"
 
+function find_current_app() {
+    echo ${PWD##*/}
+}
+
 function build_java_app() {
     _APP=$1
 
@@ -19,5 +23,8 @@ function build_java_app() {
     fi
 
     V3_REVISION=$git_version
-    upload $_APP /tmp/$_APP-app-$git_version.zip $version
+    #upload $_APP /tmp/$_APP-app-$git_version.zip $version
 }
+
+
+find_current_app()
