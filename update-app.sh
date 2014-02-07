@@ -1,18 +1,35 @@
 #!/usr/bin/env bash
 
+ENVIN=$1
+
 GITHUB="git@github.com:amedia"
-SERVERS=(siam thonglo)
+BKK0=(siam thonglo)
+BKK1=(asoke)
+BKK2=(silom)
+
+V3APPS=(transition apay hanuman pocit puls frontgrabber zeeland zservices zmapfetcher)
 
 function find_current_app() {
-     APP=${PWD##*/}
-     echo "building app $APP"
+  APP=${PWD##*/}
+  echo "building app $APP for $ENVIN"
+}
+
+function check_app_server() {
+  echo "checking $APP for $ENVIN"
+  for _SERVER in ${ENVIN[@]}
+  do
+    echo $_SERVER
+  done
+  for _APP in ${V3APPS[@]}
+  do
+    echo $_APP
+  done
 }
 
 function build_java_app() {
     echo "running maven build for $APP..."
     mvn -q clean install -Dmaven.test.skip
     echo "done!"
-    #git_version=`git log --pretty=format:%h -1`
 
     if [ -e $APP-webapp/target/$APP.war ]
     then
@@ -27,8 +44,6 @@ function build_java_app() {
 	fi
     fi
 
-    #V3_REVISION=$git_version
-    #upload $_APP /tmp/$_APP-app-$git_version.zip $version
 }
 
 function upload_app() {
@@ -44,7 +59,8 @@ function upload_app() {
 }
 
 find_current_app
-build_java_app
-upload_app
+check_app_server
+#build_java_app
+#upload_app
 
 
