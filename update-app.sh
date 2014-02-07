@@ -1,33 +1,49 @@
 #!/usr/bin/env bash
 
-ENVIN=$1
+ENV=$1
 
 GITHUB="git@github.com:amedia"
-BKK0=(siam thonglo)
-BKK1=(asoke)
-BKK2=(silom)
 
-V3APPS=(transition apay hanuman pocit puls frontgrabber zeeland zservices zmapfetcher)
+declare -A ENVS
+ENVS[bkk0]="siam,thonglo"
+ENVS[bkk1]="asoke"
+ENVS[bkk2]="silom"
+
+declare -A V3APPS
+V3APPS[bkk0]="transition,apay,hanuman,pocit,puls,frontgrabber,hydra"
+V3APPS[bkk1]="zservices,zeeland,zmapfetcher"
 
 function find_current_app() {
   APP=${PWD##*/}
-  echo "building app $APP for $ENVIN"
+  echo "building app $APP for $ENV"
 }
 
 function check_app_server() {
-  echo "checking $APP for $ENVIN"
-  for _SERVER in ${ENVIN[@]}
+  _V3APPS=(${V3APPS[$ENV]//,/ })
+  for _APP in ${_V3APPS[@]} 
+  do
+    if [ $_APP == $APP ]
+    then
+	return 1
+    fi
+  done
+  echo -e "Could not find app!!"
+  exit 1
+}
+
+
+function get_servers() {
+  SERVERS=(${ENVS[$ENV]//,/ }) 
+  echo "found servers: "
+  for _SERVER in ${SERVERS[@]} 
   do
     echo $_SERVER
   done
-  for _APP in ${V3APPS[@]}
-  do
-    echo $_APP
-  done
 }
 
+
 function build_java_app() {
-    echo "running maven build for $APP..."
+    echo "running maven build for $APP in current folder"
     mvn -q clean install -Dmaven.test.skip
     echo "done!"
 
@@ -46,11 +62,11 @@ function build_java_app() {
 
 }
 
-function upload_app() {
-    echo "uploading app.."
+function update_app() {
+    echo "uploading $APP"
     for _MY_SERVER in ${SERVERS[@]}
     do
-        echo $_MY_SERVER
+        echo "server $_MY_SERVER"
 	scp /tmp/$APP-webapp.war $_MY_SERVER:/tmp
 	ssh $_MY_SERVER sudo mv /tmp/$APP-webapp.war /usr/local/$APP/webapps 
 	ssh $_MY_SERVER sudo /etc/init.d/$APP restart
@@ -59,8 +75,7 @@ function upload_app() {
 }
 
 find_current_app
+get_servers
 check_app_server
-#build_java_app
-#upload_app
-
-
+build_java_app
+update_app
